@@ -211,6 +211,7 @@ int main (void)
 	gfx_mono_ssd1306_init();
 
 	while(1) {
+		pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
 		if(tc_flag){
 			pin_toggle(LED1_PIO, LED1_PIO_IDX_MASK);
 			tc_flag = 0;
