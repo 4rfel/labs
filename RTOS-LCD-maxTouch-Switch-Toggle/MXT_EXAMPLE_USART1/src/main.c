@@ -53,6 +53,7 @@ typedef struct {
 	uint32_t x;         // posicao x
 	uint32_t y;         // posicao y
 	uint32_t border;
+	void (*callback)(void);
 } t_but;
 
 QueueHandle_t xQueueTouch;
@@ -60,8 +61,15 @@ QueueHandle_t xQueueTouch;
 /************************************************************************/
 /* handler/callbacks                                                    */
 /************************************************************************/
-
-
+void callback_but0(){
+	printf("callback0\n");
+}
+void callback_but1(){
+	printf("callback1\n");
+}
+void callback_but2(){
+	printf("callback2\n");
+}
 /************************************************************************/
 /* RTOS hooks                                                           */
 /************************************************************************/
@@ -277,15 +285,15 @@ void task_lcd() {
 
 	t_but but0 = {.width = 120, .height = 75, .border = 2,
 		.colorOn = COLOR_TOMATO, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 40 };
+	.x = ILI9488_LCD_WIDTH/2, .y = 40, .callback = &callback_but0 };
 	
 	t_but but1 = {.width = 120, .height = 75, .border = 2,
 		.colorOn = COLOR_GREEN, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 140 };
+	.x = ILI9488_LCD_WIDTH/2, .y = 140, .callback = &callback_but1 };
 	
 	t_but but2 = {.width = 120, .height = 75, .border = 2,
 		.colorOn = COLOR_GOLD, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 240 };
+	.x = ILI9488_LCD_WIDTH/2, .y = 240, .callback = &callback_but2 };
 	
 	t_but botoes[] = {but0, but1, but2};
 	uint8_t buts_status[] = {1, 1, 1};
@@ -302,7 +310,10 @@ void task_lcd() {
 	while (1) {
 		if (xQueueReceive( xQueueTouch, &(touch), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
 			int i = process_touch(botoes, touch, 3);
-			if(i != -1) buts_status[i] = !buts_status[i];
+			if(i != -1){
+				 botoes[i].callback();
+				 buts_status[i] = 1 - buts_status[i];
+			}
 			//update_screen(touch.x, touch.y);
 			draw_button_new(but0, buts_status[0]);
 			
